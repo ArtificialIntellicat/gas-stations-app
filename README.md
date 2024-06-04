@@ -8,9 +8,10 @@ This project is a Single Page Application (SPA) that displays gas stations in Co
 
 - **Fetch Data from External API**: Automatically fetches gas stations data from the Cologne geoportal API and stores it in the SQLite database.
 - **Add Gas Stations**: Users can add new gas stations with an address, latitude, and longitude.
-- **Edit Gas Stations**: Users can edit existing gas stations directly in the table with inline editing functionality.
-- **Delete Gas Stations**: Users can delete gas stations.
+- **Edit Gas Stations**: Users can edit user-added gas stations directly in the table with inline editing functionality.
+- **Delete Gas Stations**: Users can delete user-added gas stations.
 - **Sort and Search**: The address column can be sorted in ascending or descending order. Users can also search for gas stations by address.
+- **Refresh API Data**: Refresh API data in cause of updates.
 - **Responsive Design**: The application is designed to be responsive and user-friendly.
 
 ## Technologies Used
@@ -38,7 +39,6 @@ cd gas-stations-app
 
 **Backend Setup:**
 ```sh
-Code kopieren
 cd backend
 npm install
 node server.js
@@ -49,7 +49,6 @@ node server.js
 Open a new terminal and navigate to the frontend directory:
 
 ```sh
-Code kopieren
 cd ../frontend
 npm install
 npm run serve
