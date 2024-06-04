@@ -2,7 +2,7 @@
   "name": "gas-stations-app",
   "version": "1.0.0",
   "description": "A single page application to find and add gas stations.",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
