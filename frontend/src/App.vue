@@ -48,15 +48,21 @@
       </form>
 
       <!-- Search Bar -->
-      <div class="mb-6">
-        <label for="search" class="block text-gray-300 text-sm font-bold mb-2">Search Gas Station:</label>
-        <input
-          type="text"
-          v-model="search"
-          id="search"
-          placeholder="Search by address"
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        />
+      <div class="mb-6 flex items-center">
+        <div class="flex-grow">
+          <label for="search" class="block text-gray-300 text-sm font-bold mb-2">Search Gas Station:</label>
+          <input
+            type="text"
+            v-model="search"
+            id="search"
+            placeholder="Search by address"
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
+        </div>
+        <button
+          @click="fetchExternalGasStations"
+          class="bg-[#7188d1] text-white font-bold py-2 px-4 ml-4 rounded hover:bg-[#4A569D] focus:outline-none focus:shadow-outline"
+        >Refresh</button>
       </div>
 
       <!-- Gas Stations Table -->
@@ -107,7 +113,7 @@
               </div>
             </td>
             <td class="py-2 px-4 border-b">
-              <div class="flex space-x-2">
+              <div class="flex space-x-2" v-if="station.source === 'user'">
                 <button
                   v-if="!editingStation || editingStation.id !== station.id"
                   @click="editStation(station)"
@@ -176,6 +182,7 @@ export default {
       axios
         .get('http://localhost:3000/api/gas-stations')
         .then(response => {
+          console.log('Fetched gas stations:', response.data);
           this.gasStations = response.data;
         })
         .catch(error => {
@@ -247,7 +254,6 @@ export default {
   },
   mounted() {
     this.fetchGasStations();
-    this.fetchExternalGasStations();
   },
 };
 </script>
