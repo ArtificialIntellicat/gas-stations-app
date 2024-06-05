@@ -39,7 +39,6 @@ cd gas-stations-app
 
 **Backend Setup:**
 ```sh
-cd backend
 npm install
 node server.js
 ```
@@ -49,7 +48,7 @@ node server.js
 Open a new terminal and navigate to the frontend directory:
 
 ```sh
-cd ../frontend
+cd frontend
 npm install
 npm run serve
 ```
