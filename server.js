@@ -7,6 +7,7 @@ const https = require('https');
 
 const app = express();
 const port = 3000;
+let initialFetchDone = false; // Flag to ensure data is fetched once
 
 // Middleware
 app.use(bodyParser.json());
@@ -25,11 +26,17 @@ db.serialize(() => {
             longitude REAL,
             source TEXT
         )
-    `);
+    `, (err) => {
+        if (err) {
+            console.error('Failed to create table', err);
+        } else {
+            console.log('Table created successfully');
+        }
+    });
 });
 
 // Fetch gas stations from external API and save to database
-app.get('/api/external-gas-stations', async (req, res) => {
+async function fetchAndStoreGasStations() {
     try {
         const agent = new https.Agent({ rejectUnauthorized: false });
         const response = await axios.get(
@@ -44,6 +51,8 @@ app.get('/api/external-gas-stations', async (req, res) => {
             source: 'api'
         }));
 
+        console.log('Fetched gas stations:', gasStations.length);
+
         const insert = db.prepare('INSERT INTO gas_stations (address, latitude, longitude, source) VALUES (?, ?, ?, ?)');
         let count = 0;
 
@@ -51,20 +60,18 @@ app.get('/api/external-gas-stations', async (req, res) => {
             await new Promise((resolve, reject) => {
                 db.get('SELECT COUNT(*) AS count FROM gas_stations WHERE address = ?', [station.address], (err, row) => {
                     if (err) {
-                        reject(err);
-                    } else {
-                        if (row.count === 0) {
-                            insert.run(station.address, station.latitude, station.longitude, station.source, err => {
-                                if (err) {
-                                    reject(err);
-                                } else {
-                                    count++;
-                                    resolve();
-                                }
-                            });
-                        } else {
+                        return reject(err);
+                    }
+                    if (row.count === 0) {
+                        insert.run(station.address, station.latitude, station.longitude, station.source, (err) => {
+                            if (err) {
+                                return reject(err);
+                            }
+                            count++;
                             resolve();
-                        }
+                        });
+                    } else {
+                        resolve();
                     }
                 });
             });
@@ -72,21 +79,37 @@ app.get('/api/external-gas-stations', async (req, res) => {
 
         insert.finalize();
         console.log(`${count} new gas stations added.`);
-        res.json({ message: `${count} new gas stations added.` });
+        initialFetchDone = true;
     } catch (error) {
-        res.status(500).send(error.message);
+        console.error('Error fetching or inserting gas stations:', error);
     }
-});
+}
 
 // Get all gas stations
-app.get('/api/gas-stations', (req, res) => {
+app.get('/api/gas-stations', async (req, res) => {
+    if (!initialFetchDone) {
+        console.log('Fetching initial gas stations...');
+        await fetchAndStoreGasStations();
+    }
+
     db.all('SELECT * FROM gas_stations', [], (err, rows) => {
         if (err) {
             res.status(500).send(err.message);
         } else {
+            console.log('Retrieved gas stations:', rows.length);
             res.json(rows);
         }
     });
+});
+
+// Fetch gas stations from external API and save to database (for refresh button)
+app.get('/api/external-gas-stations', async (req, res) => {
+    try {
+        await fetchAndStoreGasStations();
+        res.json({ message: 'Gas stations refreshed.' });
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
 });
 
 // Add a new gas station
